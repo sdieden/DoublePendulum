@@ -1,6 +1,7 @@
 # Projet_1:Double pendule
 
 #from turtle import color
+from re import S
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -17,7 +18,7 @@ m1 = 1
 m2 = 1
 l1 = 1
 l2 = 1
-tmax = 0.9
+tmax = 100
 fps=60
 k = 1/fps
 
@@ -26,8 +27,8 @@ history_len = 100  # how many trajectory points to display
 
 
 #conditions initialles
-th0_1 = np.pi/2
-th0_2 = np.pi
+th0_1 = 0
+th0_2 = 0
 p0_1 = 0
 p0_2 = 0
 
@@ -40,6 +41,7 @@ def thstar(th1, th2, p1, p2):
 def pstar(th1, th2, dth1, dth2):
     c1 = -(m1+m2)*g*l1*np.sin(th1)-m2*l1*l2*dth1*dth2*np.sin(th1-th2)
     c2 = m2*l1*l2*dth1*dth2*np.sin(th1-th2)-m2*g*l2*np.sin(th2)
+    
     return c1, c2    
 
 
@@ -91,8 +93,8 @@ def RK4(th0_1, th0_2, p0_1, p0_2, k, tmax):
         H13, H23 = k*k13, k*k23
         H14, H24 = k*k14, k*k24
         
-        sol_th[0,i+1] = sol_th[0,i] + k(k11+(2*k12)+(2*k13)+k14)/6
-        sol_th[1,i+1] = sol_th[1,i] + (k21+(2*k22)+(2*k23)+k24)/6
+        sol_th[0,i+1] = sol_th[0,i] + k*(k11+(2*k12)+(2*k13)+k14)/6
+        sol_th[1,i+1] = sol_th[1,i] + k*(k21+(2*k22)+(2*k23)+k24)/6
         
         Q11,Q21 = pstar(sol_th[0,i], sol_th[1,i], F1, F2)
         Q12,Q22 = pstar(sol_th[0,i]+(Q11/2), sol_th[1,i]+(Q21/2), F1+(Q11/2), F2+(Q21/2))
@@ -104,8 +106,8 @@ def RK4(th0_1, th0_2, p0_1, p0_2, k, tmax):
         q13, q23 = k*Q13, k*Q23
         q14, q24 = k*Q14, k*Q24
         
-        sol_p[0,i+1] = sol_p[0,i] + k*(q11+(2*q12)+(2*q13)+q14)/6
-        sol_p[1,i+1] = sol_p[1,i] + k*(q21+(2*q22)+(2*q23)+q24)/6
+        sol_p[0,i+1] = sol_p[0,i] + k*(Q11+(2*Q12)+(2*Q13)+Q14)/6
+        sol_p[1,i+1] = sol_p[1,i] + k*(Q21+(2*Q22)+(2*Q23)+Q24)/6
     return t, sol_th, sol_p
 
 
@@ -166,14 +168,20 @@ def pp(q1,q2,p1,p2):
         exit(0)
 def Q(q1, q2, p1, p2):
     Q1, Q2 = qp(q1,q2,p1,p2)
-    Q = np.array((Q1, Q2))
+    #Q = np.array((Q1,Q2))
     
-    return Q
+    return Q1,Q2
 def P(q1,q2,p1,p2):
     P1, P2 = pp(q1,q2,p1,p2)
-    P = np.array((P1 ,P2))
+    #P = np.array((P1,P2))
     
-    return P
+    return P1,P2
+def derive(q1,q2,p1,p2):
+    dd = np.array((Q(q1,q2,p1,p2),P(q1,q2,p1,p2)))
+    derivee=np.array([item for sublist in dd for item in sublist])
+    
+    return derivee
+
 def RK(q1,q2,p1,p2, k, tmax):
     N = int(tmax/k)
     t = np.linspace(0, tmax, N+1)
@@ -184,22 +192,60 @@ def RK(q1,q2,p1,p2, k, tmax):
     sol_p[0,0] = p1
     sol_p[1,0] = p2
     #den = m1+m2*np.sin(q1-q2)**2
-    #sol = np.array((sol_th,sol_p))
+    sol = np.array((sol_th[0],sol_th[1],sol_p[0],sol_p[1]))
+    #sol=np.array((q1,q2,p1,p2))
+    #derive = np.array((Q(q1,q2,p1,p2), P(q1,q2,p1,p2)))
+    K1 = np.zeros(4)
+    K2 = np.zeros(4)
+    K3 = np.zeros(4)
+    K4 = np.zeros(4)
     for i in range(N):
-        qq1=Q(sol_th[0,i],sol_th[1,i],sol_p[0,i],sol_p[1,i])
-        k1 = k*qq1[0]
-        k11 = k*qq1[1]
-        k2, k21 = k*Q(sol_th[0,i]+(k1/2),sol_th[1,i]+(k1/2),sol_p[0,i]+(k1/2),sol_p[1,i]+(k1/2))[0], k*Q(sol_th[0,i]+(k11/2),sol_th[1,i]+(k11/2),sol_p[0,i]+(k11/2),sol_p[1,i]+(k11/2))[1]
-        k3, k31 = k*Q(sol_th[0,i]+(k2/2),sol_th[1,i]+(k2/2),sol_p[0,i]+(k2/2),sol_p[1,i]+(k2/2))[0], k*Q(sol_th[0,i]+(k21/2),sol_th[1,i]+(k21/2),sol_p[0,i]+(k21/2),sol_p[1,i]+(k21/2))[1]
-        k4, k41 = k*Q(sol_th[0,i]+(k3/2),sol_th[1,i]+(k3/2),sol_p[0,i]+(k3/2),sol_p[1,i]+(k3/2))[0], k*Q(sol_th[0,i]+(k31/2),sol_th[1,i]+(k31/2),sol_p[0,i]+(k31/2),sol_p[1,i]+(k31/2))[1]
-        sol_th[0,i+1],sol_th[1,i+1] = sol_th[0,i] + (1/6) * (k1+(2*k2)+(2*k3)+k4), sol_th[1,i] + (1/6) * (k11 + (2 * k21) + (2 * k31) + k41)
-        k5, k51 = k*P(sol_th[0,i], sol_th[1,i], sol_p[0,i], sol_p[1,i])[0], k*P(sol_th[0,i], sol_th[1,i], sol_p[0,i], sol_p[1,i])[1]
-        k6, k61 = k*P(sol_th[0,i]+(k5/2), sol_th[1,i]+(k5/2), sol_p[0,i]+(k5/2), sol_p[1,i]+(k5/2))[0], k*P(sol_th[0,i]+(k51/2), sol_th[1,i]+(k51/2), sol_p[0,i]+(k51/2), sol_p[1,i]+(k51/2))[1]
-        k7, k71 = k*P(sol_th[0,i]+(k6/2),sol_th[1,i]+(k6/2),sol_p[0,i]+(k6/2),sol_p[1,i]+(k6/2))[0], k*P(sol_th[0,i]+(k61/2),sol_th[1,i]+(k61/2),sol_p[0,i]+(k61/2),sol_p[1,i]+(k61/2))[1]
-        k8, k81 = k*P(sol_th[0,i]+(k7/2),sol_th[1,i]+(k7/2),sol_p[0,i]+(k7/2),sol_p[1,i]+(k7/2))[0], k*P(sol_th[0,i]+(k71/2),sol_th[1,i]+(k71/2),sol_p[0,i]+(k71/2),sol_p[1,i]+(k71/2))[1]
-        sol_p[0,i+1],sol_p[1,i+1] = sol_p[0,i] + (1/6) * (k5+(2*k6)+(2*k7)+k8), sol_p[1,i] + (1/6) * (k51 + (2 * k61) + (2 * k71) + k81)
+        # for j in range(4):
+        #     a1 = derive(sol[0,i],sol[1,i],sol[2,i],sol[3,i])
+        #     K1[j] = k*a1[j]
+        #     a2 = derive( sol[0,i] + K1[0]/2, sol[1,i] + K1[1]/2, sol[2,i] + K1[2]/2, sol[3,i] + K1[3]/2 )
+        #     K2[j] = k*a2[j]
+        #     a3 = derive(sol[0,i]+K2[0]/2,sol[1,i]+K2[1]/2, sol[2,i]+K2[2]/2, sol[3,i] +K2[3]/2)
+        #     K3[j] = k*a3[j]
+        #     a4 = derive(sol[0,i]+K3[j], sol[1,i]+K3[j], sol[2,i]+K3[j],sol[3,i]+K3[j])
+        #     K4[j] = k*a4[j]
+           
+        a1 = derive(sol[0,i],sol[1,i],sol[2,i],sol[3,i])
+        K1 = k*a1
+        a2 = derive( sol[0,i] + K1[0]/2, sol[1,i] + K1[1]/2, sol[2,i] + K1[2]/2, sol[3,i] + K1[3]/2 )
+        K2 = k*a2
+        a3 = derive(sol[0,i]+K2[0]/2,sol[1,i]+K2[1]/2, sol[2,i]+K2[2]/2, sol[3,i] +K2[3]/2)
+        K3 = k*a3
+        a4 = derive(sol[0,i]+K3[0], sol[1,i]+K3[1], sol[2,i]+K3[2],sol[3,i]+K3[3])
+        K4 = k*a4
+            #sol[j,i+1] = sol[j,i] + K1[j]/6 + K2[j]/3 + K3[j]/3 +K4[j]/6 
+        sol[:,i+1] = sol[:,i] + K1/6 + K2/3 + K3/3 +K4/6 
+            
+    #print('a1',a1), print('K1', K1), print('a2', a2), print('K2', K2), print('a3', a3), print('K3', K3), print('a4', a4), print('K4', K4)
+    #print(sol) 
+    sol_q1 = sol[0]
+    sol_q2 = sol[1]
+    sol_q = np.array((sol_q1, sol_q2))
+    sol_p1 = sol[2]
+    sol_p2 = sol[3]
+    sol_pp = np.array((sol_p1, sol_p2))
+    return t, sol_q, sol_pp
         
-    return t, sol_th, sol_p
+    # for i in range(N):
+    #     qq1=Q(sol_th[0,i],sol_th[1,i],sol_p[0,i],sol_p[1,i])
+    #     k1 = k*qq1[0]
+    #     k11 = k*qq1[1]
+    #     k2, k21 = k*Q(sol_th[0,i]+(k1/2),sol_th[1,i]+(k1/2),sol_p[0,i]+(k1/2),sol_p[1,i]+(k1/2))[0], k*Q(sol_th[0,i]+(k11/2),sol_th[1,i]+(k11/2),sol_p[0,i]+(k11/2),sol_p[1,i]+(k11/2))[1]
+    #     k3, k31 = k*Q(sol_th[0,i]+(k2/2),sol_th[1,i]+(k2/2),sol_p[0,i]+(k2/2),sol_p[1,i]+(k2/2))[0], k*Q(sol_th[0,i]+(k21/2),sol_th[1,i]+(k21/2),sol_p[0,i]+(k21/2),sol_p[1,i]+(k21/2))[1]
+    #     k4, k41 = k*Q(sol_th[0,i]+(k3/2),sol_th[1,i]+(k3/2),sol_p[0,i]+(k3/2),sol_p[1,i]+(k3/2))[0], k*Q(sol_th[0,i]+(k31/2),sol_th[1,i]+(k31/2),sol_p[0,i]+(k31/2),sol_p[1,i]+(k31/2))[1]
+    #     sol_th[0,i+1],sol_th[1,i+1] = sol_th[0,i] + (1/6) * ((k1)+(2*k2)+(2*k3)+(k4)), sol_th[1,i] + (1/6) * ((k11) + (2 * k21) + (2 * k31) + (k41))
+    #     k5, k51 = k*P(sol_th[0,i], sol_th[1,i], sol_p[0,i], sol_p[1,i])[0], k*P(sol_th[0,i], sol_th[1,i], sol_p[0,i], sol_p[1,i])[1]
+    #     k6, k61 = k*P(sol_th[0,i]+(k5/2), sol_th[1,i]+(k5/2), sol_p[0,i]+(k5/2), sol_p[1,i]+(k5/2))[0], k*P(sol_th[0,i]+(k51/2), sol_th[1,i]+(k51/2), sol_p[0,i]+(k51/2), sol_p[1,i]+(k51/2))[1]
+    #     k7, k71 = k*P(sol_th[0,i]+(k6/2),sol_th[1,i]+(k6/2),sol_p[0,i]+(k6/2),sol_p[1,i]+(k6/2))[0], k*P(sol_th[0,i]+(k61/2),sol_th[1,i]+(k61/2),sol_p[0,i]+(k61/2),sol_p[1,i]+(k61/2))[1]
+    #     k8, k81 = k*P(sol_th[0,i]+(k7/2),sol_th[1,i]+(k7/2),sol_p[0,i]+(k7/2),sol_p[1,i]+(k7/2))[0], k*P(sol_th[0,i]+(k71/2),sol_th[1,i]+(k71/2),sol_p[0,i]+(k71/2),sol_p[1,i]+(k71/2))[1]
+    #     sol_p[0,i+1],sol_p[1,i+1] = sol_p[0,i] + (1/6) * (k5+(2*k6)+(2*k7)+(k8)), sol_p[1,i] + (1/6) * ((k51) + (2 * k61) + (2 * k71) + (k81))
+    #     print(t[i+1])
+    # return t, sol_th, sol_p
 
 ### Méthode de Newton EPISODE 3 PRISE 1
 ######## Apparement juste capable de trouver les pos d'equilibre
@@ -251,22 +297,7 @@ def Jacobien(q1,q2,p1,p2):
         print(q1,q2,p1,p2,den)
         exit(0)
 
-    #return vp
-# def qp(q1,q2,p1,p2):
-#     den = m1+m2*np.sin(q1-q2)**2 
-#     C1 = (p1*p2*m2*np.sin(q1-q2)/(l1*l2*(m1+m2*np.sin(q1-q2)**2)))
-#     C2 = (np.sin(2*(q1-q2))/2*l1**2*l2**2*den**2)*(l1**2*p2**2*(m1+m2)+l2**2*p1**2*m2-m2*l1*l2*p1*p2*np.cos(q1-q2))  
-#     c1 = (l2*p1-l1*p2*np.cos(q1-q2)/(l1**2*l2*(m1+m2*np.sin(q1-q2)**2)))
-#     c2 = (l2*(m1+m2)*p2-l2*m2*p1*np.cos(q1-q2))/(l2**2*l1*den)
-#     return c1,c2
-# def pp(q1,q2,p1,p2):
-#     den = m1+m2*np.sin(q1-q2)**2 
-#     try:
-#         C1 = (p1*p2*m2*np.sin(q1-q2)/(l1*l2*(m1+m2*np.sin(q1-q2)**2)))
-#         C2 = (np.sin(2*(q1-q2))/2*l1**2*l2**2*den**2)*(l1**2*p2**2*(m1+m2)+l2**2*p1**2*m2-m2*l1*l2*p1*p2*np.cos(q1-q2))  
-#     c1 = -(m1+m2)*g*l1*np.sin(q1)+ C2 - C1
-#     c2 = -m2*g*l2*np.sin(q2) + C1 - C2
-    # return c1,c2
+
 def Newton(th0_1, th0_2, p0_1, p0_2, k, tmax):
     N = int(tmax/k)
     t = np.linspace(0, tmax, N+1)
@@ -293,11 +324,11 @@ def Newton(th0_1, th0_2, p0_1, p0_2, k, tmax):
 
 
 
-# t, sol_th, sol_p = Euler(th0_1, th0_2, p0_1, p0_2, k, tmax)
+#t, sol_th, sol_p = Euler(th0_1, th0_2, p0_1, p0_2, k, tmax)
 # t, sol_th1 ,sol_p1 = Euler(th0_1+0.01,th0_2+0.01, p0_1,p0_2,k,tmax)
 #NR
-t, sol_th, sol_p = RK4(th0_1, th0_2, p0_1, p0_2, k, tmax)
-t, sol_th1 ,sol_p1 = RK4(th0_1+0.01,th0_2+0.01, p0_1+0.01,p0_2+0.01,k,tmax)
+t, sol_th, sol_p = RK(th0_1, th0_2, p0_1, p0_2, k, tmax)
+t, sol_th1 ,sol_p1 = RK(th0_1+0.01,th0_2+0.01, p0_1+0.01,p0_2+0.01,k,tmax)
 
 
 ### Ne marche pas avec RK4
@@ -383,11 +414,11 @@ def Energie_calc(p,g,m,h):
 
 E1 = Energie_calc(sol_p[0,:],g,m1,y1)
 E2 = Energie_calc(sol_p[0,:],g,m2,y2)
-E = E1 +E2
+#E = E1 +E2
 fig, ax2=plt.subplots()
-#ax2.plot(t, E1, label = 'E1')
-#ax2.plot(t,E2, label = 'E2')
-ax2.plot(t, E, label = 'E1+E2')
+ax2.plot(t, E1, label = 'E1')
+ax2.plot(t,E2, label = 'E2')
+#ax2.plot(t, E, label = 'E1+E2')
 plt.xlabel('temps')
 plt.ylabel('Energie')
 plt.title("Energie")
