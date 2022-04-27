@@ -129,3 +129,102 @@ plt.show()
 #2 CALCUL DU PLUS GRAND COEFFICIENT DE LYAPUNOV
 #####################################
 
+#définition de l'operateur tangeante J
+# 小 = 0
+# def J(日,朋,木,林,时):
+    
+#     J = (1/小)*F(日,朋,木,林)
+#     return J
+# ## Spin-up
+# #Conditions initiales ∂x
+# def cond():
+#     return q1,q2,p1,p2
+# ####### besoin de réécrire tout ca, qp et pp useless puisque tout est dans F, donc faut réécrire Newton et Jacobien aussi
+# def qp(q1,q2,p1,p2):
+#     den = m1+m2*np.sin(q1-q2)**2 
+#     c1 = (l2*p1-l1*p2*np.cos(q1-q2)/(l1**2*l2*(m1+m2*np.sin(q1-q2)**2))) 
+#     c2 = (l2*(m1+m2)*p2-l2*m2*p1*np.cos(q1-q2))/(l2**2*l1*den)
+#     return c1,c2
+# def pp(q1,q2,p1,p2):
+#     den = m1+m2*np.sin(q1-q2)**2 
+#     try:
+       
+#         C1 = (p1*p2*m2*np.sin(q1-q2))/(l1*l2*(m1+m2*np.sin(q1-q2)**2))
+#         C2 = (np.sin(2*(q1-q2))/2*l1**2*l2**2*den**2)*(l1**2*p2**2*(m1+m2)+l2**2*p1**2*m2-m2*l1*l2*p1*p2*np.cos(q1-q2))  
+#         c1 = -(m1+m2)*g*l1*np.sin(q1)+ C2 - C1
+#         c2 = -m2*g*l2*np.sin(q2) + C1 - C2
+#         return c1,c2
+#     except FloatingPointError as err:
+#         print(err)
+#         #print(C1, 'C1')
+#         #print(C2, 'C2')
+#         print(q1, 'q1')
+#         print(q2, 'q2')
+#         print(p1, 'p1')
+#         print('p2', p2)
+#         exit(0)
+
+# def Jacobien(q1,q2,p1,p2):
+#     den = m1+m2*np.sin(q1-q2)**2
+#     J = np.zeros((4,4))
+#     dth1th1 = (1/l)*(p2*np.sin(q1-q2)*(m1+m2*np.sin(q1-q2)**2)+p2*np.cos(q1-q2)*(2*m2*np.sin(q1-q2)*np.cos(q1-q2))/den**2)
+#     dth1th2 = (1/l)*(((2*m2*p2*np.sin(q1-q2)*np.cos(q1-q2)**2)/den**2)-p2*np.sin(q1-q2)/den)
+#     dth1p2 = (1/l)*(-np.cos(q1-q2)/den)
+#     dth1p1 = 1/(l1**2*(m1+m2*np.sin(q1-q2)**2))
+#     J[0,0] = dth1th1
+#     J[0,1] = dth1th2
+#     J[0,2] = dth1p1
+#     J[0,3] = dth1p2
+#     dth2th1 = (1/l)*(m2*p1*np.sin(q1-q2)*(m1+m2*np.sin(q1-q2)**2)+2*m2**2*p1*np.sin(q1-q2)*np.cos(q1-q2)**2)/den**2
+#     dth2th2 = (1/l)*(1/den**2)*(-2*l1*m2*p1*np.sin(q1-q2)*np.cos(q1-q2)**2-m2*p1*np.sin(q1-q2)*(m1+m2*np.sin(q1-q2)**2))
+#     dth2p1 = (1/l)*(1/den)*(-m2*np.cos(q1-q2))
+#     dth2p2 = (1/l)*(1/den)*(m1+m2)
+#     J[1,0],J[1,1], J[1,2], J[1,3] = dth2th1, dth2th2, dth2p1, dth2p2
+#     dc1q1 = ((m2*np.cos(q1-q2))/(l1*l2*(m1+m2*np.sin(q1-q2)**2)))*(p1*p2-(2*m2*np.sin(q1-q2)**2)/(m1+m2*np.sin(q1-q2)**2))
+#     dc1q2 = ((p1*p2*m2)/(l*den**2))*(2*m2*np.cos(q1-q2)*np.sin(q1-q2)**2-np.cos(q1-q2)*den)
+#     dc1p1 = (1/l*den)*p2*m2*np.sin(q1-q2)
+#     dc1p2 = (1/l*den)*p1*m2*np.sin(q1-q2)
+#     dc2q1 = m2*p1*p2*np.sin(q1-q2)*np.sin(2*(q1-q2))/(2*l1*l2*(m2*np.sin(q1-q2)**2+m1)) - (2*m2*np.cos(q1-q2)*(-l*m2*p1*p2*np.cos(q1-q2)+l1**2*(m2+m1)*p2**2+l2**2*m2*p1**2)*np.sin(q1-q2)*np.sin(2*(q1-q2)))/(l**2*den**3) + (-l*m2*p1*p2*np.cos(q1-q2)+l1**2*(m1+m2)*p2**2+l2**2*m2*p1**2)*np.cos(2*(q1-q2))/(l*den**2)
+#     dc2q2 = m2*p2*p1*np.sin(2*(q1-q2))*np.sin(q2-q1)-(np.cos(2*(q1-q2))*(-l*m2*p1*p2*np.cos(q2-q1)+l1**2*(m2+m1)*p2**2)+l2**2*m2*p1**2)/(l**2*den**2)- (2*m2*np.sin(2*(q1-q2)*np.cos(q2-q1))*(-l*m2*p1*p2*np.cos(q2-q1)+l1**2*(m2+m1)*p2**2)+l2**2*m2*p1**2)*np.sin(q2-q1)/(l**2*den**3)
+#     dc2p1 = m2*np.sin(2*(q1-q2))*(2*l2*p1-l1*p2*np.cos(q2-q1))/(2*l1**2*l2*den**2)
+#     dc2p2 = (m1+m2)*np.sin(2*(q1-q2))*(2*l1*p2-l1*p1*np.cos(q2-q1))/(2*l2**2*l1*den**2)  
+#     dp1q1 = -(m1+m2)*g*l1*np.cos(q1)- dc1q1+ dc2q1
+#     dp1q2 = dc2q2 - dc1q2
+#     dp1p1 = dc2p1 - dc1p1
+#     dp1p2 = dc2p2 - dc1p2
+#     dp2q1 = - dc2q1+ dc1q1
+#     dp2q2 = -m2*g*l2*np.cos(q2)-  dc1q2 - dc2q2
+#     dp2p1 = dc1p1 - dc2p1
+#     dp2p2 = dc1p2 - dc2p2
+
+#     J[2,0],J[2,1], J[2,2], J[2,3] = dp1q1, dp1q2, dp1p1, dp1p2
+#     J[3,0],J[3,1], J[3,2], J[3,3] = dp2q1, dp2q2, dp2p1, dp2p2
+#     try:
+#         J_inv = np.linalg.inv(J)
+#         #vp = np.linalg.eigvals(J)
+#         return J_inv
+#     except np.linalg.LinAlgError as err:
+#         print("Error : {}".format(err))
+#         print(J)
+#         #print(dth1th1,dth2th1,dp1q1,dp2q1)
+#         print(q1,q2,p1,p2,den)
+#         exit(0)
+
+
+# def Newton(th0_1, th0_2, p0_1, p0_2, k, tmax):
+#     N = tmax/k
+
+#     for i in range(N):
+#         F1, F2 = qp(sol_th[0,i], sol_th[1,i], sol_p[0,i], sol_p[1,i])
+#         F3, F4 = pp(sol_th[0,i], sol_th[1,i], sol_p[0,i], sol_p[1,i])
+#         F = np.array([F1,F2,F3,F4])
+#         #sol_th[0,i+1] = sol_th[0,i] - np.dot(Jacobien(th0_1,th0_2,p0_1,p0_2),F)
+#         jacob=Jacobien(sol_th[0,i], sol_th[1,i], sol_p[0,i], sol_p[1,i])
+        
+#         sol_th[0,i+1] = sol_th[0,i] - jacob[0,0]*F1 - jacob[0,1]*F2 - jacob[0,2]*F3 - jacob[0,3]*F4
+#         sol_th[1,i+1] = sol_th[1,i] - jacob[1,0]*F1 - jacob[1,1]*F2 - jacob[1,2]*F3 - jacob[1,3]*F4
+#         sol_p[0,i+1]  = sol_p[0,i]  - jacob[2,0]*F1 - jacob[2,1]*F2 - jacob[2,2]*F3 - jacob[2,3]*F4
+#         sol_p[1,i+1]  = sol_p[1,i]  - jacob[3,0]*F1 - jacob[3,1]*F2 - jacob[3,2]*F3 - jacob[3,3]*F4
+#         #print(sol_th[:4], sol_p[:4])
+#     return t, sol_th, sol_p
+    
