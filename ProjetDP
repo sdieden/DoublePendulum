@@ -1,6 +1,7 @@
 # Projet_1:Double pendule
 
 #from turtle import color
+
 from re import S
 import numpy as np
 import matplotlib.pyplot as plt
@@ -12,6 +13,7 @@ from IPython import display
 
 def test_jacobien():
     print(Jacobien(0.2,0.2828,1,2))
+
 # Constantes du système
 g = 9.81
 m1 = 1
@@ -32,6 +34,7 @@ th0_2 = 0
 p0_1 = 0
 p0_2 = 0
 
+
 #définition F
 def thstar(th1, th2, p1, p2):
     c1 = (m2*l2**2*p1-m2*l1*l2*np.cos(th1-th2)*p2)/(m2*l1**2*l2**2*(m1+m2*(np.sin(th1-th2))**2))
@@ -41,8 +44,10 @@ def thstar(th1, th2, p1, p2):
 def pstar(th1, th2, dth1, dth2):
     c1 = -(m1+m2)*g*l1*np.sin(th1)-m2*l1*l2*dth1*dth2*np.sin(th1-th2)
     c2 = m2*l1*l2*dth1*dth2*np.sin(th1-th2)-m2*g*l2*np.sin(th2)
+
     
     return c1, c2    
+
 
 
 #Def Euler avant 
@@ -93,8 +98,10 @@ def RK4(th0_1, th0_2, p0_1, p0_2, k, tmax):
         H13, H23 = k*k13, k*k23
         H14, H24 = k*k14, k*k24
         
+
         sol_th[0,i+1] = sol_th[0,i] + k*(k11+(2*k12)+(2*k13)+k14)/6
         sol_th[1,i+1] = sol_th[1,i] + k*(k21+(2*k22)+(2*k23)+k24)/6
+
         
         Q11,Q21 = pstar(sol_th[0,i], sol_th[1,i], F1, F2)
         Q12,Q22 = pstar(sol_th[0,i]+(Q11/2), sol_th[1,i]+(Q21/2), F1+(Q11/2), F2+(Q21/2))
@@ -106,9 +113,11 @@ def RK4(th0_1, th0_2, p0_1, p0_2, k, tmax):
         q13, q23 = k*Q13, k*Q23
         q14, q24 = k*Q14, k*Q24
         
+
         sol_p[0,i+1] = sol_p[0,i] + k*(Q11+(2*Q12)+(2*Q13)+Q14)/6
         sol_p[1,i+1] = sol_p[1,i] + k*(Q21+(2*Q22)+(2*Q23)+Q24)/6
     return t, sol_th, sol_p
+
 
 
 ###################################
@@ -127,20 +136,24 @@ def denp_1(th1,th2):
 def denp_2(th1, th2):
     denominateur = m2*l1**2*l2**2*(m1+m2*np.sin(th1-th2)**2)
     return denominateur
-##########
-#Debut Useless
+
+
+
 def fdf(th1,th2,p1,p2):
     deno1 = m2*l1*l2*p2*np.sin(th1-th2)*denth0_1(th1,th2)+2*m2**3*l1**3*l2**3*p2*np.cos(th1-th2)**2*np.sin(th1-th2)
     deno2 = (((m1+m2)*l1**2*p2-m2*l2*l1*p1*np.cos(th1-th2))*denth0_2(th1,th2))*2*m2**2*l1**2*l2**2*np.sin(th1-th2)*np.cos(th1-th2)-m2*l1*l2*p1*np.sin(th1-th2)*denth0_2(th1,th2)
     c1 = (m2*l2**2*p1-m2*l1*l2*p2*np.cos(th1-th2))*(denth0_1(th1,th2))/deno1
     c2 = ((m1+m2)*l1**2*p2-m2*l2*l1*p1*np.cos(th1-th2))*denth0_2(th1,th2)/deno2
+
     
     return c1,c2
     
+
 def fdfd(th1,th2,p1,p2):
     c3 = l2**2*p1-l1*l2*np.cos(th1-th2)*p2/l2**2
     c4 = (m1+m2)*l1**2*p2-m2*l1*l2*np.cos(th1-th2)*p1/(m1+m2)*l1**2
     return c3,c4
+
 l = l1*l2
 #####Nouvelle définition de Runge-Kutta 4
 def qp(q1,q2,p1,p2):
@@ -300,6 +313,10 @@ def Jacobien(q1,q2,p1,p2):
 
 
 def Newton(th0_1, th0_2, p0_1, p0_2, k, tmax):
+
+#Def Newton-Raphson
+def NR(th0_1, th0_2, p0_1, p0_2, k, tmax):
+
     N = int(tmax/k)
     t = np.linspace(0, tmax, N+1)
     sol_th = np.zeros((2,N+1))
@@ -308,6 +325,7 @@ def Newton(th0_1, th0_2, p0_1, p0_2, k, tmax):
     sol_th[1,0] = th0_2
     sol_p[0,0] = p0_1
     sol_p[1,0] = p0_2
+
 
     for i in range(N):
         F1, F2 = qp(sol_th[0,i], sol_th[1,i], sol_p[0,i], sol_p[1,i])
@@ -330,6 +348,7 @@ def Newton(th0_1, th0_2, p0_1, p0_2, k, tmax):
 #NR
 t, sol_th, sol_p = RK(th0_1, th0_2, p0_1, p0_2, k, tmax)
 t, sol_th1 ,sol_p1 = RK(th0_1+0.01,th0_2+0.01, p0_1+0.01,p0_2+0.01,k,tmax)
+
 
 
 ### Ne marche pas avec RK4
@@ -400,6 +419,7 @@ def animate(i):
     trace.set_data(history_x, history_y)
     trace2.set_data(history_xx, history_yy)
     time_text.set_text(time_template % (i*k))
+
     return line, line2, time_text, trace, trace2
     #return line, time_text, trace
 
@@ -425,5 +445,6 @@ plt.ylabel('Energie')
 plt.title("Energie")
 plt.legend()
 plt.show()
+
 
 
